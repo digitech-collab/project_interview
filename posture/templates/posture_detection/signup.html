@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign Up - PostureSpeak AI</title>
+
+    <style>
+      :root {
+        --primary: #2563eb;
+        --secondary: #1e40af;
+        --success: #22c55e;
+        --warning: #eab308;
+        --danger: #ef4444;
+        --background: #ffffff;
+        --text: #111827;
+      }
+      [data-theme="dark"] {
+        --background: #111827;
+        --text: #f3f4f6;
+        --primary: #3b82f6;
+        --secondary: #60a5fa;
+        --accent: #2563eb;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        background: var(--background);
+        color: var(--text);
+        line-height: 1.6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 1rem;
+      }
+      
+      .theme-toggle {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0.5rem;
+        color: var(--text);
+      }
+      
+      .signup-container {
+        width: 100%;
+        max-width: 500px;
+      }
+      
+      .logo-container {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+      
+      .logo {
+        font-size: 2rem;
+        font-weight: bold;
+        color: var(--primary);
+        letter-spacing: 1px;
+        text-transform: uppercase;
+      }
+      
+      .glass-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 2rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+      
+      .form-title {
+        text-align: center;
+        margin-bottom: 2rem;
+        font-size: 1.5rem;
+        font-weight: 600;
+      }
+      
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
+      
+      .form-row {
+        display: flex;
+        gap: 1rem;
+      }
+      
+      .form-row .form-group {
+        flex: 1;
+      }
+      
+      .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+      }
+      
+      .form-input {
+        width: 100%;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text);
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+      }
+      
+      .form-input:focus {
+        outline: none;
+        border-color: var(--primary);
+      }
+      
+      .btn {
+        width: 100%;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        background: linear-gradient(45deg, var(--primary), var(--secondary));
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 1rem;
+      }
+      
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+      }
+      
+      .form-footer {
+        text-align: center;
+        margin-top: 1.5rem;
+      }
+      
+      .form-footer a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s ease;
+      }
+      
+      .form-footer a:hover {
+        color: var(--secondary);
+        text-decoration: underline;
+      }
+      
+      .error-message {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--danger);
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+        text-align: center;
+        font-weight: 500;
+      }
+      
+      .password-requirements {
+        font-size: 0.8rem;
+        color: var(--text);
+        opacity: 0.7;
+        margin-top: 0.5rem;
+      }
+      
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      .fade-in {
+        animation: fadeIn 0.5s ease-in;
+      }
+    </style>
+  </head>
+  <body>
+    <button class="theme-toggle" onclick="toggleTheme()">
+      🌓 dark mode
+    </button>
+    
+    <div class="signup-container fade-in">
+      <div class="logo-container">
+        <div class="logo">PostureSpeak AI</div>
+      </div>
+      
+      <div class="glass-card">
+        <h2 class="form-title">Create an Account</h2>
+        
+        {% if error_message %}
+        <div class="error-message">
+          {{ error_message }}
+        </div>
+        {% endif %}
+        
+        <form method="post" action="{% url 'signup' %}">
+          {% csrf_token %}
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="first_name" class="form-label">First Name</label>
+              <input type="text" id="first_name" name="first_name" class="form-input" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="last_name" class="form-label">Last Name</label>
+              <input type="text" id="last_name" name="last_name" class="form-input" required>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="email" class="form-label">Email Address</label>
+            <input type="email" id="email" name="email" class="form-input" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" id="username" name="username" class="form-input" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="password1" class="form-label">Password</label>
+            <input type="password" id="password1" name="password1" class="form-input" required>
+            <div class="password-requirements">
+              Password must be at least 8 characters and include letters, numbers and special characters.
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="password2" class="form-label">Confirm Password</label>
+            <input type="password" id="password2" name="password2" class="form-input" required>
+          </div>
+          
+          <button type="submit" class="btn">Create Account</button>
+          
+          <div class="form-footer">
+            <p>Already have an account? <a href="{% url 'login' %}">Sign in</a></p>
+          </div>
+        </form>
+      </div>
+    </div>
+    
+    <script>
+      // Theme toggle functionality
+      function toggleTheme() {
+        document.body.dataset.theme = document.body.dataset.theme === 'dark' ? 'light' : 'dark';
+        localStorage.setItem('theme', document.body.dataset.theme);
+      }
+      
+      // Check for saved theme preference
+      document.addEventListener('DOMContentLoaded', function() {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+          document.body.dataset.theme = savedTheme;
+        }
+      });
+      
+      // Password validation
+      const password1 = document.getElementById('password1');
+      const password2 = document.getElementById('password2');
+      const form = document.querySelector('form');
+      
+      form.addEventListener('submit', function(e) {
+        if (password1.value !== password2.value) {
+          e.preventDefault();
+          alert('Passwords do not match!');
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Upload Video</title>
+
+    <style>
+      :root {
+        --primary: #2563eb;
+        --secondary: #1e40af;
+        --success: #22c55e;
+        --warning: #eab308;
+        --danger: #ef4444;
+        --background: #ffffff;
+        --text: #111827;
+      }
+      [data-theme="dark"] {
+        --background: #111827;
+        --text: #f3f4f6;
+        --primary: #3b82f6;
+        --secondary: #60a5fa;
+        --accent: #2563eb;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        background: var(--background);
+        color: var(--text);
+        line-height: 1.6;
+      }
+      .theme-toggle {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0.5rem;
+        color: var(--text);
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+        display:block
+      }
+
+      /* Glassmorphism Card Style */
+      .glass-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 2rem;
+        margin-bottom: 2rem;
+      }
+
+      /* Recording Section */
+      .recording-section {
+        text-align: center;
+        position: relative;
+      }
+
+      .video-container {
+        width: 100%;
+        max-width: 640px;
+        margin: 2rem auto;
+        border-radius: 1rem;
+        overflow: hidden;
+        position: relative;
+      }
+
+      video {
+        width: 100%;
+        border-radius: 1rem;
+        background: #1e293b;
+      }
+
+      /* Buttons */
+      .btn-group {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin: 1rem 0;
+      }
+
+      .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        background: linear-gradient(45deg, var(--primary), var(--secondary));
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+      }
+
+      .btn-danger {
+        background: linear-gradient(45deg, var(--danger), #dc2626);
+      }
+
+      /* Countdown Timer */
+      .countdown {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 6rem;
+        font-weight: bold;
+        color: white;
+        text-shadow: 0 0 20px rgba(37, 99, 235, 0.5);
+        display: none;
+      }
+
+      /* Analysis Dashboard */
+      .dashboard {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin: 2rem 0;
+      }
+
+      .metric-card {
+        padding: 1.5rem;
+        border-radius: 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .metric-title {
+        font-size: 1.1rem;
+        color: #94a3b8;
+        margin-bottom: 0.5rem;
+      }
+
+      .metric-value {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 1rem;
+      }
+
+      /* Transcription Section */
+      .transcript {
+        max-height: 300px;
+        overflow-y: auto;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 0.5rem;
+        margin: 1rem 0;
+      }
+
+      .filler-word {
+        color: var(--danger);
+        font-weight: 500;
+      }
+
+      /* Spider Chart */
+      .chart-container {
+        width: 100%;
+        max-width: 500px;
+        margin: 2rem auto;
+        position: relative;
+      }
+
+      /* Animations */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .fade-in {
+        animation: fadeIn 0.5s ease-in;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .container {
+          padding: 1rem;
+        }
+
+        .btn-group {
+          flex-direction: column;
+        }
+
+        .btn {
+          width: 100%;
+        }
+      }
+      /* Header & Navbar Styles */
+      header {
+        background: linear-gradient(45deg, var(--primary), var(--secondary));
+        padding: 1rem 0;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+      }
+
+      .navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+      }
+
+      .logo {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: white;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+      }
+
+      .nav-links {
+        display: flex;
+        list-style: none;
+        gap: 2rem;
+      }
+
+      .nav-links li a {
+        text-decoration: none;
+        color: white;
+        font-size: 1rem;
+        font-weight: 600;
+        transition: color 0.3s ease-in-out;
+      }
+
+      .nav-links li a:hover {
+        color: var(--warning);
+      }
+
+      /* Navigation Tabs for Record/Upload */
+      .nav-tabs {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 0.5rem;
+      }
+
+      .nav-tab {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem 0.5rem 0 0;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text);
+        transition: all 0.3s ease;
+      }
+
+      .nav-tab:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .nav-tab.active {
+        background: linear-gradient(45deg, var(--primary), var(--secondary));
+        color: white;
+      }
+
+      /* Upload Section Styles */
+      .upload-section {
+        display: none;
+        text-align: center;
+        padding: 2rem;
+        border-radius: 1rem;
+        border: 2px dashed rgba(255, 255, 255, 0.2);
+        margin-bottom: 2rem;
+        transition: all 0.3s ease;
+      }
+
+      .upload-section.active {
+        display: block;
+      }
+
+      .upload-section:hover {
+        border-color: var(--primary);
+      }
+
+      .upload-section input[type="file"] {
+        display: none;
+      }
+
+      .upload-label {
+        display: block;
+        padding: 2rem;
+        margin-bottom: 1rem;
+        cursor: pointer;
+      }
+
+      .upload-icon {
+        font-size: 3rem;
+        color: var(--primary);
+        margin-bottom: 1rem;
+      }
+
+      .file-info {
+        margin-top: 1rem;
+        font-size: 0.9rem;
+        color: #94a3b8;
+      }
+
+      .selected-file {
+        margin-top: 1rem;
+        padding: 0.5rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 0.5rem;
+        display: none;
+      }
+
+      .section-container {
+        display: none;
+      }
+
+      .section-container.active {
+        display: block;
+      }
+
+      /* Responsive Navbar */
+      .menu-toggle {
+        display: none;
+        font-size: 2rem;
+        cursor: pointer;
+        color: white;
+      }
+
+      @media (max-width: 768px) {
+        .nav-links {
+          display: none;
+          flex-direction: column;
+          position: absolute;
+          top: 60px;
+          right: 0;
+          background: rgba(0, 0, 0, 0.9);
+          width: 100%;
+          padding: 1rem 0;
+          text-align: center;
+        }
+
+        .nav-links.active {
+          display: flex;
+        }
+
+        .menu-toggle {
+          display: block;
+        }
+      }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  </head>
+  <body>
+    <header>
+      <nav class="navbar">
+        <div class="logo">PostureSpeak AI</div>
+        <button class="theme-toggle" onclick="toggleTheme()">
+          🌓 dark mode
+        </button>
+        <ul class="nav-links">
+          <li><a href="landingpage.html">Home</a></li>
+          <li><a href="#">Features</a></li>
+          <li><a href="#">Analysis</a></li>
+          <li><a href="report.html">Reports</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+        <div class="menu-toggle" onclick="toggleMenu()">&#9776;</div>
+      </nav>
+    </header>
+
+    {% comment %}
+    <h2>Video Recorder</h2>
+    {% endcomment %}
+    <div class="loading"></div>
+
+    <div class="container"  >
+      <div class="glass-card recording-section" id="record-upload">
+        <h2>Prepare Your Presentation</h2>
+        <!-- Navigation Tabs -->
+      <div class="nav-tabs">
+        <button class="nav-tab active" id="recordTab">Record Video</button>
+        <button class="nav-tab" id="uploadTab">Upload Video</button>
+      </div>
+
+        <div id="timer" style="font-size: 1.5rem; margin-top: 1rem"></div>
+
+        {% comment %} <div class="video-container">
+          <video id="preview" autoplay muted></video>
+          <div class="countdown" id="countdown">3</div>
+        </div> {% endcomment %}
+
+        {% comment %} <div class="upload-video">
+          <h2>Upload Video</h2>
+          <form id="uploadForm" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="file" id="videoFile" name="video" accept="video/*" />
+            <button type="submit" class="btn">Upload</button>
+          </form>
+        </div> {% endcomment %}
+
+        {% comment %} <div class="btn-group">
+          <button id="startBtn" class="btn">Start Recording</button>
+          <button id="uploadVideo" class="btn">Upload Video</button>
+          <button id="stopBtn" class="btn btn-danger" style="display: none">
+            Stop Recording
+          </button>
+          <button id="resumerecord"  class="btn btn-success"  style="display: none" >
+            Resume Recording
+          </button>
+          <button id="restartRecord" class="btn" style="display: none">
+            Restart Recording
+          </button>
+          <button id="uploadBtn" class="btn" style="display: none">
+            Start Analysis
+          </button>
+        </div>
+      </div> {% endcomment %}
+      
+       <!-- Recording Section -->
+       <div class="section-container active" id="recordSection">
+        <div class="recording-section">
+          
+          
+          <div class="video-container">
+            <video id="preview" autoplay muted></video>
+            <div class="countdown" id="countdown">3</div>
+          </div>
+          
+          <div class="btn-group">
+            <button id="startBtn" class="btn">Start Recording</button>
+            <button id="stopBtn" class="btn btn-danger" style="display: none">Stop Recording</button>
+            <button id="resumeRecord" class="btn btn-success" style="display: none">Resume Recording</button>
+            <button id="restartRecord" class="btn" style="display: none">Restart Recording</button>
+            <button id="uploadBtn" class="btn" style="display: none">Start Analysis</button>
+          </div>
+        </div>
+      </div>
+    
+      <!-- Upload Section -->
+      <div class="section-container" id="uploadSection">
+        <div class="upload-section active">
+          <form id="uploadForm" enctype="multipart/form-data">
+          <label for="videoFile" class="upload-label">
+            <div class="upload-icon">📤</div>
+            <h3>Drag and drop or click to upload</h3>
+            <p>Support for MP4, MOV, WEBM (max 100MB)</p>
+            {% csrf_token %}
+            <input type="file" id="videoFile" name="video" accept="video/*" />
+          </label>
+          
+          <div class="selected-file" id="selectedFile">
+            <p id="fileName">No file selected</p>
+          </div>
+          
+          <div class="file-info">
+            For best results, use videos where you are clearly visible and audio is clear
+          </div>
+          
+          <div class="btn-group">
+            <button type="submit" id="analyzeUploadBtn"class="btn" disabled>Start Analysis</button>
+          </div>
+        </form>
+        </div>
+      </div>
+      </div>
+      <!--Loader Section-->
+      <div id="Loader">
+        <h1>FEEDBACK WILL BE GENERATED IN A MOMENT😊</h1>
+      </div>
+
+
+      <div id="analysisSection" style="display: none">
+        <div class="glass-card">
+          <h2>Video Preview</h2>
+          <div class="video-container">
+            <video id="videoPreview" src="" controls></video>
+          </div>
+          <h2>Analysis Dashboard</h2>
+          <div class="dashboard">
+            <div class="metric-card">
+              <div class="metric-title">Total words</div>
+              <div class="metric-value" id="totalWords">--</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-title">Speaking Speed (WPM)</div>
+              <div class="metric-value" id="speakingSpeed">--</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-title">Filler Word Count</div>
+              <div class="metric-value" id="fillerWords">--</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-title">Fluency Rating</div>
+              <div class="metric-value" id="fluencyRating">--</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-title">Long Phases</div>
+              <div class="metric-value" id="longPhases">--</div>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="spiderChart"></canvas>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <h2>Speech Transcription <span id="transcriptStatus"></span></h2>
+          <p>
+            Filler words are <span class="filler-word">highlighted</span> to
+            help you identify areas for improvement.
+          </p>
+          <div class="transcript" id="transcriptText"></div>
+          <div class="btn-group">
+            <button id="copyTranscript" class="btn">Copy Transcript</button>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <h2>Feed Back</h2>
+          <div
+        id="llm-response"
+        style="padding: 15px;"
+      >
+  
+      </div>
+          <div class="btn-group">
+            <button id="downloadReport" class="btn">Download Report</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+   
+
+    {% comment %} <!-- AI BASED FEEDBACK -->
+    <div class="content">
+      <h2>AI Response</h2>
+      
+      <button
+        id="fetch-response"
+        style="margin-top: 10px; padding: 8px 15px; cursor: pointer"
+      >
+        Get AI FeedBack
+      </button>
+    </div> {% endcomment %}
+<script>
+// Global variables
+let mediaRecorder;
+let recordedChunks = [];
+let stream;
+let startTime;
+let timerInterval;
+let spiderChart;
+ // Toggle between Record and Upload tabs
+ document.getElementById('recordTab').addEventListener('click', function() {
+  document.getElementById('recordTab').classList.add('active');
+  document.getElementById('uploadTab').classList.remove('active');
+  document.getElementById('recordSection').classList.add('active');
+  document.getElementById('uploadSection').classList.remove('active');
+});
+
+document.getElementById('uploadTab').addEventListener('click', function() {
+  document.getElementById('uploadTab').classList.add('active');
+  document.getElementById('recordTab').classList.remove('active');
+  document.getElementById('uploadSection').classList.add('active');
+  document.getElementById('recordSection').classList.remove('active');
+});
+
+// Show selected file name
+document.getElementById('videoFile').addEventListener('change', function(e) {
+  const fileName = e.target.files[0]?.name || 'No file selected';
+  document.getElementById('fileName').textContent = fileName;
+  document.getElementById('selectedFile').style.display = 'block';
+ document.getElementById('analyzeUploadBtn').disabled = !e.target.files[0];
+});
+
+// DOM elements - cache for performance
+const elements = {
+  preview1: document.getElementById('videoPreview'),
+  preview: document.getElementById('preview'),
+  startBtn: document.getElementById('startBtn'),
+  stopBtn: document.getElementById('stopBtn'),
+  uploadBtn: document.getElementById('uploadBtn'),
+  restartRecord: document.getElementById('restartRecord'),
+  timer: document.getElementById('timer'),
+  countdown: document.getElementById('countdown'),
+  analysisSection: document.getElementById('analysisSection'),
+  transcriptStatus: document.getElementById('transcriptStatus'),
+  transcriptText: document.getElementById('transcriptText'),
+  uploadForm: document.getElementById('uploadForm'),
+  videoFile: document.getElementById('videoFile'),
+  llmResponse: document.getElementById('llm-response')
+};
+
+// Configuration
+const CONFIG = {
+  MAX_RECORDING_MINUTES: 2,
+  COUNTDOWN_SECONDS: 3,
+  FILLER_WORDS: ["um", "uh", "like", "you know", "so", "actually", "basically", "literally", "right", "i mean"]
+};
+
+// Theme toggle
+function toggleTheme() {
+  document.body.dataset.theme = document.body.dataset.theme === 'dark' ? 'light' : 'dark';
+}
+
+// Countdown timer before recording
+function startCountdown(callback) {
+  let count = CONFIG.COUNTDOWN_SECONDS;
+  elements.countdown.style.display = 'block';
+  elements.countdown.textContent = count;
+
+  const interval = setInterval(() => {
+    count--;
+    if (count > 0) {
+      elements.countdown.textContent = count;
+    } else {
+      clearInterval(interval);
+      elements.countdown.style.display = 'none';
+      callback();
+    }
+  }, 1000);
+}
+
+// Recording timer
+function updateTimer() {
+  const elapsed = Date.now() - startTime;
+  const seconds = Math.floor(elapsed / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  elements.timer.textContent = `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+
+  // Stop recording after MAX_RECORDING_MINUTES
+  if (minutes >= CONFIG.MAX_RECORDING_MINUTES) {
+    stopRecording();
+  }
+}
+
+// Start recording
+async function startRecording() {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    elements.preview.srcObject = stream;
+    
+    mediaRecorder = new MediaRecorder(stream, { mimeType: "video/webm" });
+    
+    mediaRecorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        recordedChunks.push(event.data);
+      }
+    };
+    
+    mediaRecorder.onstop = () => {
+      elements.uploadBtn.disabled = false;
+      elements.timer.textContent = '';
+      clearInterval(timerInterval);
+    };
+
+    startCountdown(() => {
+      mediaRecorder.start();
+      startTime = Date.now();
+      timerInterval = setInterval(updateTimer, 1000);
+
+      elements.startBtn.style.display = 'none';
+      elements.stopBtn.style.display = 'inline-block';
+    });
+  } catch (error) {
+    console.error("Error accessing media devices:", error);
+    alert("Could not access camera or microphone. Please check permissions.");
+  }
+}
+
+// Stop recording
+function stopRecording() {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    mediaRecorder.stop();
+    stream.getTracks().forEach(track => track.stop());
+    
+    elements.timer.textContent = '';
+    elements.stopBtn.style.display = 'none';
+    elements.uploadBtn.style.display = 'inline-block';
+    elements.restartRecord.style.display = 'inline-block';
+  }
+}
+
+// Initialize spider chart
+function initSpiderChart() {
+  if (spiderChart) {
+    spiderChart.destroy();
+  }
+  
+  const ctx = document.getElementById('spiderChart').getContext('2d');
+  spiderChart = new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels: ['Total Words', 'Speaking Speed (WPM)', 'Fluency Rating', 'Filler Words'],
+      datasets: [{
+        label: 'Fluency Metrics',
+        data: [0, 0, 0, 0],  // Default values before update
+        backgroundColor: 'rgba(37, 99, 235, 0.2)',
+        borderColor: 'rgba(37, 99, 235, 1)',
+        pointBackgroundColor: 'rgba(37, 99, 235, 1)',
+        pointBorderColor: '#fff',
+        pointHoverBackgroundColor: '#fff',
+        pointHoverBorderColor: 'rgba(37, 99, 235, 1)'
+      }]
+    },
+    options: {
+      scales: {
+        r: {
+          beginAtZero: true,
+          max: 100,
+          ticks: {
+            stepSize: 20
+          }
+        }
+      }
+    }
+  });
+  
+  return spiderChart;
+}
+
+// Process transcript to highlight filler words
+function processTranscript(transcript) {
+  let fillerCount = 0;
+  
+  // Create regex patterns once (performance optimization)
+  const regexPatterns = CONFIG.FILLER_WORDS.map(word => ({
+    word: word,
+    regex: new RegExp(`\\b${word}\\b`, 'gi')
+  }));
+
+  const processedTranscript = transcript.map(item => {
+    let text = item.text;
+
+    // Find and highlight filler words
+    regexPatterns.forEach(({ word, regex }) => {
+      const matches = text.match(regex);
+      if (matches) {
+        fillerCount += matches.length;
+        text = text.replace(regex, `<span class="filler-word">$&</span>`);
+      }
+    });
+
+    return {
+      time: item.time,
+      text: text
+    };
+  });
+
+  return {
+    processedTranscript,
+    fillerCount
+  };
+}
+
+// Display transcript with timestamps
+function displayTranscript(transcript) {
+  elements.transcriptText.innerHTML = '';
+  
+  // Use document fragment for better performance
+  const fragment = document.createDocumentFragment();
+  
+  transcript.forEach(item => {
+    const paragraph = document.createElement('p');
+    paragraph.innerHTML = `<span class="timestamp">[${item.time}]</span> ${item.text}`;
+    fragment.appendChild(paragraph);
+  });
+  
+  elements.transcriptText.appendChild(fragment);
+}
+
+// Copy transcript to clipboard
+function copyTranscript() {
+  try {
+    const textToCopy = Array.from(elements.transcriptText.querySelectorAll('p'))
+      .map(p => {
+        // Remove HTML tags and keep only text
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = p.innerHTML;
+        return tempDiv.textContent;
+      })
+      .join('\n');
+
+    navigator.clipboard.writeText(textToCopy)
+      .then(() => {
+        showNotification('Transcript copied to clipboard!');
+      });
+  } catch (err) {
+    console.error('Failed to copy: ', err);
+    showNotification('Failed to copy transcript.', 'error');
+  }
+}
+
+// Show notification instead of alert
+function showNotification(message, type = 'success') {
+  // Implementation depends on your UI framework
+  // This is a simple example
+  const notification = document.createElement('div');
+  notification.className = `notification ${type}`;
+  notification.textContent = message;
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    notification.classList.add('show');
+    setTimeout(() => {
+      notification.classList.remove('show');
+      setTimeout(() => document.body.removeChild(notification), 300);
+    }, 2000);
+  }, 10);
+}
+
+// Simulate loading states for analysis
+function simulateLoading(elementId, text, callback, delay = 2000) {
+  const element = document.getElementById(elementId);
+  element.innerHTML = `${text} <div class="loading"></div>`;
+
+  return setTimeout(callback, delay);
+}
+
+function transformPath(filePath) {
+  // Remove leading "/temp/"
+  let newPath = filePath.replace(/^\/?temp\//, "");
+
+  // Convert backslashes to forward slashes (if needed)
+  newPath = newPath.replace(/\\/g, "/");
+
+  return newPath;
+}
+
+
+
+
+// Perform analysis on the transcript
+function performAnalysis(data) {
+  elements.analysisSection.style.display = 'block';
+  console.log(data.path)
+ 
+  if (data.success && data.path) {
+    v_path=transformPath(data.path)
+    elements.preview1.src = v_path;
+    elements.preview1.controls = true;
+  }
+  
+  // Show loading state
+  simulateLoading('transcriptStatus', 'Analyzing speech...', () => {
+    // Process the transcript
+    const { processedTranscript, fillerCount } = processTranscript(data.transcript.transcription);
+
+    // Display processed transcript
+    displayTranscript(processedTranscript);
+
+    // Update transcript status
+    elements.transcriptStatus.textContent = '(Analysis Complete)';
+
+    const fluency = data.transcript.fluency_results;
+
+    // Update metrics using a helper function
+    updateMetrics(fluency);
+
+    // Update spider chart
+    updateSpiderChart(fluency);
+  });
+}
+
+// Helper function to update metrics
+function updateMetrics(fluency) {
+  const metricsToUpdate = {
+    'totalWords': fluency.total_words,
+    'speakingSpeed': fluency.speaking_speed_wpm,
+    'fillerWords': fluency.filler_words,
+    'fluencyRating': fluency.fluency_rating,
+    'longPhases': fluency.long_phases
+  };
+  
+  // Update each metric
+  Object.entries(metricsToUpdate).forEach(([id, value]) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.textContent = value;
+    }
+  });
+}
+
+// Helper function to update spider chart
+function updateSpiderChart(fluency) {
+  const chart = spiderChart || initSpiderChart();
+  
+  chart.data.datasets[0].data = [
+    fluency.total_words,
+    fluency.speaking_speed_wpm,
+    fluency.fluency_rating * 10,
+    Math.max(0, 100 - (fluency.filler_words * 5))
+  ];
+  
+  chart.update();
+}
+
+// Upload recording to server
+function uploadRecording() {
+  const blob = new Blob(recordedChunks, { type: "video/webm" });
+  const formData = new FormData();
+  formData.append("video", blob, "recording.webm");
+  document.getElementById('record-upload').style.display='none';
+  document.getElementById('Loader').style.display='block';
+
+  elements.uploadBtn.style.display = 'none';
+  elements.restartRecord.style.display = 'none';
+
+  // Show loading indicator
+  showNotification('Uploading recording...', 'info');
+
+  fetch("save-recording/", {
+    method: "POST",
+    body: formData
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+    }
+    return response.json();
+  })
+  .then(data => {
+    performAnalysis(data);
+    // Also get LLM response
+    llmResponse(data.transcript.transcription);
+    document.getElementById('Loader').style.display='none';
+  })
+  .catch(error => {
+    console.error("Error:", error);
+    showNotification('Upload failed. Please try again.', 'error');
+  });
+}
+
+// Function to call LLM response API
+function llmResponse(uploadData) {
+  fetch("fetch-llm-response/", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ "Data": uploadData })
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`LLM API returned ${response.status}`);
+    }
+    return response.json();
+  })
+  .then(data => {
+    elements.llmResponse.innerHTML = data.response_html;
+  })
+  .catch(error => {
+    console.error("Error fetching LLM response:", error);
+    elements.llmResponse.innerHTML = '<p class="error">Could not fetch AI analysis. Please try again.</p>';
+  });
+}
+
+// Event listeners using event delegation where possible
+function setupEventListeners() {
+  // Record button
+  elements.startBtn.addEventListener("click", startRecording);
+  
+  // Stop button
+  elements.stopBtn.addEventListener("click", stopRecording);
+  
+  // Upload button
+  elements.uploadBtn.addEventListener("click", uploadRecording);
+  
+  // Upload form
+  elements.uploadForm.addEventListener("submit", function(event) {
+    event.preventDefault();
+    document.getElementById('record-upload').style.display='none';
+    document.getElementById('Loader').style.display='block';
+    
+    
+    const file = elements.videoFile.files[0];
+    if (!file) {
+      showNotification('Please select a video file first', 'error');
+      return;
+    }
+    
+    const formData = new FormData();
+    formData.append("video", file);
+    
+    showNotification('Uploading file...', 'info');
+    
+    fetch("save-upload/", {
+      method: "POST",
+      body: formData
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+      return response.json();
+    })
+    .then(data => {
+      performAnalysis(data);
+      llmResponse(data.transcript.transcription);
+      document.getElementById('Loader').style.display='none';
+    })
+    .catch(error => {
+      console.error("Error:", error);
+      showNotification('Upload failed. Please try again.', 'error');
+    });
+  });
+  
+  // Copy transcript button
+  document.getElementById("copyTranscript")?.addEventListener("click", copyTranscript);
+  
+  // Theme toggle
+  document.getElementById("themeToggle")?.addEventListener("click", toggleTheme);
+}
+
+// Initialize the application
+function init() {
+  // Initialize UI
+  elements.stopBtn.style.display = 'none';
+  elements.uploadBtn.style.display = 'none';
+  elements.restartRecord.style.display = 'none';
+  document.getElementById('Loader').style.display='none';
+  
+  // Set up event listeners
+  setupEventListeners();
+  
+  // Initialize spider chart
+  initSpiderChart();
+  
+  // Check for browser compatibility
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    showNotification('Your browser does not support recording. Please use a modern browser.', 'error');
+    elements.startBtn.disabled = true;
+  }
+}
+
+// Run initialization when DOM is loaded
+document.addEventListener('DOMContentLoaded', init);
+
+</script>
+</body>
+</html>

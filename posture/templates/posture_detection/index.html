@@ -1,0 +1,406 @@
+ {% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PostureSpeakAI</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #1e40af;
+            --background: #ffffff;
+            --text: #1f2937;
+            --accent: #3b82f6;
+        }
+
+        [data-theme="dark"] {
+            --background: #111827;
+            --text: #f3f4f6;
+            --primary: #3b82f6;
+            --secondary: #60a5fa;
+            --accent: #2563eb;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Header & Navigation */
+        header {
+            position: fixed;
+            width: 100%;
+            top: 0;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            padding: 1rem 0;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            color: var(--text);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 8rem 0 4rem;
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 4rem 0;
+            background: var(--background);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            padding: 2rem;
+            border-radius: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        /* How It Works */
+        .how-it-works {
+            text-align: center; /* Centers heading */
+        }
+        
+        .steps-grid {
+            display: flex;
+            justify-content: center; /* Centers all steps horizontally */
+            align-items: center; /* Aligns them vertically */
+            gap: 50px; /* Adds space between steps */
+            flex-wrap: wrap; /* Ensures responsiveness on smaller screens */
+        }
+        
+        .step-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Centers content inside each card */
+            text-align: center;
+            max-width: 250px; /* Prevents text from stretching too wide */
+        }
+        
+        lottie-player {
+            margin-bottom: 10px; /* Adds space below animation */
+        }
+
+        /* Demo Section */
+        .demo {
+            padding: 4rem 0;
+            background: var(--background);
+        }
+
+        .demo-video {
+            width: 100%;
+            max-width: 800px;
+            margin: 2rem auto;
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+
+        /* Testimonials */
+        .testimonials {
+            padding: 4rem 0;
+            background: var(--background);
+        }
+
+        .testimonial-carousel {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            gap: 2rem;
+            padding: 2rem 0;
+        }
+
+        .testimonial-card {
+            flex: 0 0 300px;
+            scroll-snap-align: start;
+            padding: 2rem;
+            border-radius: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        /* CTA Section */
+        .cta {
+            padding: 4rem 0;
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 1rem 2rem;
+            border-radius: 2rem;
+            background: white;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: bold;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Footer */
+        footer {
+            padding: 4rem 0;
+            background: var(--background);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .container {
+                padding: 0 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container nav-container">
+            <div class="logo">PostureSpeak AI</div>
+            <button class="theme-toggle" onclick="toggleTheme()">🌓 dark mode</button>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h1 data-aos="fade-up">Master Your Interview & Presentation Skills with AI!</h1>
+            <p data-aos="fade-up" data-aos-delay="100">Get real-time feedback on your posture and speech fluency to boost confidence and communication.</p>
+            <a href="#" id="startAnalysis" class="btn" data-aos="fade-up" data-aos-delay="200">Try It Now</a>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="container">
+            <h2 data-aos="fade-up">Key Features</h2>
+            <div class="features-grid">
+                <div class="feature-card" data-aos="fade-up">
+                    <h3>Posture Analysis</h3>
+                    <p>AI classifies posture as good, neutral, or bad with real-time feedback.</p>
+                </div>
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
+                    <h3>Speech Fluency Analysis</h3>
+                    <p>Detects filler words, pauses, and speaking rate for improved communication.</p>
+                </div>
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
+                    <h3>Real-time Feedback</h3>
+                    <p>Instant suggestions to enhance your communication skills.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="how-it-works">
+        <div class="container">
+            <h2 data-aos="fade-up">How It Works</h2>
+            <div class="steps-grid">
+                <div class="step-card" data-aos="fade-up">
+                    <lottie-player src="{% static "animations/Animation - 1740279420287.json" %}""animations/Animation - .json" background="transparent" speed="1" style="width: 120px; height: 100px;" loop autoplay></lottie-player>
+                    <h3>Step 1</h3>
+                    <p>Upload a video or record a live session</p>
+                </div>
+                <div class="step-card" data-aos="fade-up" data-aos-delay="100">
+                    <lottie-player src="{% static "animations/Animation - 1740279892583.json" %}" background="transparent" speed="1" style="width: 120px; height: 100px;" loop autoplay></lottie-player>
+                    <h3>Step 2</h3>
+                    <p>AI analyzes posture & speech fluency</p>
+                </div>
+                <div class="step-card" data-aos="fade-up" data-aos-delay="200">
+                    <lottie-player src="{% static "animations/Animation - 1740280070400.json" %}" background="transparent" speed="1" style="width: 120px; height: 100px;" loop autoplay></lottie-player>
+                    <h3>Step 3</h3>
+                    <p>Receive a detailed AI-generated report</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Lottie Player CDN -->
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+
+    <section class="demo">
+        <div class="container">
+            <h2 data-aos="fade-up">See It In Action</h2>
+            <div class="demo-video" data-aos="fade-up">
+                <img src="{% static "Attentive-body-language.jpg" %}" alt="Description" width="800" height="600">
+            </div>
+        </div>
+    </section>
+
+    <section class="testimonials">
+        <div class="container">
+            <h2 data-aos="fade-up">Success Stories</h2>
+            <div class="testimonial-carousel">
+                <div class="testimonial-card" data-aos="fade-up">
+                    <p>"This tool helped me ace my job interview. The posture feedback was invaluable!"</p>
+                    <h4>Sarah J.</h4>
+                </div>
+                <div class="testimonial-card" data-aos="fade-up" data-aos-delay="100">
+                    <p>"My presentation skills improved dramatically after just a few sessions."</p>
+                    <h4>Michael R.</h4>
+                </div>
+                <div class="testimonial-card" data-aos="fade-up" data-aos-delay="200">
+                    <p>"The real-time feedback helped me eliminate filler words from my speech."</p>
+                    <h4>Emily L.</h4>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta">
+        <div class="container">
+            <h2 data-aos="fade-up">Ready to Transform Your Communication Skills?</h2>
+            <p data-aos="fade-up" data-aos-delay="100">Start your free analysis today and see the difference AI can make.</p>
+            <a href="{% url 'record_page' %}" class="btn" data-aos="fade-up" data-aos-delay="200">Start Your Free Analysis</a>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <h3>About Us</h3>
+                    <p>Empowering professionals with AI-driven communication skills enhancement.</p>
+                </div>
+                <div>
+                    <h3>Contact</h3>
+                    <p>support@aiposturepro.com</p>
+                </div>
+                <div>
+                    <h3>Follow Us</h3>
+                    <p>Social media links here</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 1000,
+            once: true
+        });
+
+        // Theme toggle
+        function toggleTheme() {
+            document.body.dataset.theme = 
+                document.body.dataset.theme === 'dark' ? 'light' : 'dark';
+        }
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 1000,
+            once: true
+        });
+    
+        // Theme toggle
+        function toggleTheme() {
+            document.body.dataset.theme =
+                document.body.dataset.theme === 'dark' ? 'light' : 'dark';
+        }
+    
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    
+        // Redirect to analysis page on button click
+        document.getElementById("startAnalysis").addEventListener("click", function () {
+            localStorage.setItem("userPreference", "darkMode"); // Example data storage
+            window.location.href = "analysis.html";
+        });
+    </script>
+</body>
+</html>

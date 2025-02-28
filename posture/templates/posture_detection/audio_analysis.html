@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech Fluency Analyzer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .upload-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .upload-button:hover {
+            background-color: #45a049;
+        }
+
+        .results-section {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .chart-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .metric-card {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin: 10px 0;
+        }
+
+        .transcript-container {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+
+        .transcript-line {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: white;
+            border-radius: 5px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .timestamp {
+            color: #666;
+            min-width: 60px;
+            margin-right: 15px;
+            font-family: monospace;
+        }
+
+        .text {
+            flex: 1;
+            line-height: 1.5;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .filler-word {
+            background-color: #ffeb3b;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .long-pause {
+            color: #f44336;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Speech Fluency Analyzer</h1>
+        
+        <div class="upload-section">
+            <input type="file" id="audioFile" class="file-input" accept="audio/*">
+            <button class="upload-button" onclick="document.getElementById('audioFile').click()">
+                Choose Audio File
+            </button>
+        </div>
+
+        <div class="loading">
+            <div class="spinner"></div>
+            <p>Analyzing your speech...</p>
+        </div>
+
+        <div class="results-section">
+            <div class="analysis-grid">
+                <div class="chart-container">
+                    <canvas id="radarChart"></canvas>
+                </div>
+                <div class="metrics">
+                    <div class="metric-card">
+                        <h3>Total Words</h3>
+                        <div class="metric-value" id="totalWords">-</div>
+                    </div>
+                    <div class="metric-card">
+                        <h3>Filler Words</h3>
+                        <div class="metric-value" id="fillerWords">-</div>
+                    </div>
+                    <div class="metric-card">
+                        <h3>Long Pauses</h3>
+                        <div class="metric-value" id="longPauses">-</div>
+                    </div>
+                    <div class="metric-card">
+                        <h3>Speaking Speed (WPM)</h3>
+                        <div class="metric-value" id="speakingSpeed">-</div>
+                    </div>
+                    <div class="metric-card">
+                        <h3>Fluency Rating</h3>
+                        <div class="metric-value" id="fluencyRating">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="transcript-container">
+                <h2>Transcription</h2>
+                <div id="transcriptionContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let radarChart = null;
+
+        function highlightFillerWords(text) {
+            const fillerWords = ["um", "uh", "like", "you know", "so", "actually", "basically"];
+            let highlightedText = text;
+            fillerWords.forEach(word => {
+                const regex = new RegExp(`\\b${word}\\b`, 'gi');
+                highlightedText = highlightedText.replace(regex, `<span class="filler-word">${word}</span>`);
+            });
+            return highlightedText;
+        }
+
+        function displayTranscript(transcription) {
+            const container = document.getElementById('transcriptionContent');
+            container.innerHTML = '';
+            
+            const lines = transcription.split('\n');
+            lines.forEach(line => {
+                const match = line.match(/\[(\d+)s\] (.*)/);
+                if (match) {
+                    const timestamp = match[1];
+                    const text = match[2];
+                    
+                    const lineDiv = document.createElement('div');
+                    lineDiv.className = 'transcript-line';
+                    lineDiv.innerHTML = `
+                        <span class="timestamp">[${timestamp}s]</span>
+                        <span class="text">${highlightFillerWords(text)}</span>
+                    `;
+                    container.appendChild(lineDiv);
+                }
+            });
+        }
+
+        function createRadarChart(data) {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            
+            // Normalize values for radar chart
+            const normalizedData = {
+                speakingSpeed: Math.min(100, (data.speaking_speed_wpm / 150) * 100),
+                fillerWords: Math.max(0, 100 - (data.filler_words * 10)),
+                longPauses: Math.max(0, 100 - (data.long_pauses * 15)),
+                fluencyRating: data.fluency_rating * 10,
+                wordCount: Math.min(100, (data.total_words / 200) * 100)
+            };
+
+            if (radarChart) {
+                radarChart.destroy();
+            }
+
+            radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: [
+                        'Speaking Speed',
+                        'Filler Words',
+                        'Pause Control',
+                        'Fluency Rating',
+                        'Word Count'
+                    ],
+                    datasets: [{
+                        label: 'Speech Performance',
+                        data: [
+                            normalizedData.speakingSpeed,
+                            normalizedData.fillerWords,
+                            normalizedData.longPauses,
+                            normalizedData.fluencyRating,
+                            normalizedData.wordCount
+                        ],
+                        backgroundColor: 'rgba(76, 175, 80, 0.2)',
+                        borderColor: 'rgba(76, 175, 80, 1)',
+                        pointBackgroundColor: 'rgba(76, 175, 80, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(76, 175, 80, 1)'
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                stepSize: 20
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        document.getElementById('audioFile').addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                const file = e.target.files[0];
+                const formData = new FormData();
+                formData.append('audio_file', file);
+
+                document.querySelector('.loading').style.display = 'block';
+                document.querySelector('.results-section').style.display = 'none';
+
+                fetch('/analyze-audio/', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.querySelector('.loading').style.display = 'none';
+                    document.querySelector('.results-section').style.display = 'block';
+                    
+                    // Update metrics
+                    const analysis = data.fluency_analysis;
+                    document.getElementById('totalWords').textContent = analysis.total_words;
+                    document.getElementById('fillerWords').textContent = analysis.filler_words;
+                    document.getElementById('longPauses').textContent = analysis.long_pauses;
+                    document.getElementById('speakingSpeed').textContent = analysis.speaking_speed_wpm;
+                    document.getElementById('fluencyRating').textContent = analysis.fluency_rating + '/10';
+
+                    // Create radar chart
+                    createRadarChart(analysis);
+
+                    // Display transcript
+                    displayTranscript(data.transcription);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while analyzing the audio. Please try again.');
+                    document.querySelector('.loading').style.display = 'none';
+                });
+            }
+        });
+    </script>
+</body>
+</html>
